@@ -1,6 +1,6 @@
 let number = new RegExp("[0-9]+");
 
-let operator = new RegExp("[+-*/]");
+let operator = new RegExp("[+\\-*/]");
 
 console.log(number);
 
@@ -79,7 +79,7 @@ class Parser{
         let l = this.muldiv_expression();
         while(true){
             let op = this.plusminus_op();
-            if(op != null){
+            if(op == null){
                 break;
             }
             let r = this.muldiv_expression();
@@ -89,22 +89,24 @@ class Parser{
     }
 
     muldiv_expression(): number{
-        let l = this.muldiv_expression();
+        let l = this.number_literal();
         while(true){
             let op =  this.muldiv_op();
-            if(op != null){
+            if(op == null){
                 break;
             }
-            let r = this.muldiv_expression();
-            l = l+r;
+            let r = this.number_literal();
+            l = l*r;
         }
         return l;
     }
 
-    number(){
+    number_literal(): number{
         if(this.current() instanceof NumberToken){
-            return this.next()
+            let n = this.next() as NumberToken;
+            return parseInt(n.n);
         }
+        return null;
     }
 
     plusminus_op(): Operator{
@@ -136,6 +138,7 @@ class Parser{
     }
 
     current(){
+        console.log(this.tokens[this.cursor])
         return this.tokens[this.cursor];
     }
 
@@ -144,17 +147,18 @@ class Parser{
     }
 }
 
-function expression(tokens: Token[]){
-    muldiv_expression();
-
-}
 
 function calc(target: string){
     let tokenStrings = target.split(/[ ]*/);
     console.log(tokenStrings);
+    let tokens = [];
     for(let i of tokenStrings){
+        tokens.push(tokenize(i));
         console.log(tokenize(i));
     }
+    let parser = new Parser(tokens);
+    console.log(parser.expression());
+
 }
 
 function main(){
