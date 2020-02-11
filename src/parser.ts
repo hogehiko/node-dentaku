@@ -1,18 +1,27 @@
 import Record from 'dataclass';
 import {Option, option, some, none} from "ts-option";
+import { Parser } from './app';
 
 export interface TreeEntry{
+}
+
+
+export interface LabeledTreeEntry extends TreeEntry{
     label: string
 }
 
-export class TreeNode extends Record<TreeNode> implements TreeEntry{
+export class TreeNode extends Record<TreeNode> implements LabeledTreeEntry{
     label: string = ''
-    children: TreeNode[] = []
+    children: TreeEntry[] = []
 }
 
-export class TreeLeaf extends Record<TreeLeaf> implements TreeEntry{
+export class TreeLeaf extends Record<TreeLeaf> implements LabeledTreeEntry{
     label: string = ''
     token: string = ''
+}
+
+export class TreeEntrySequence extends Record<TreeEntrySequence> implements TreeEntry{
+    entries: TreeEntry[]
 }
 
 export class Def{
@@ -20,6 +29,8 @@ export class Def{
         return none
     }
 }
+
+
 
 export class NodeLebelDef extends Def{
     symbol: string
@@ -46,9 +57,19 @@ export class Token extends NodeLebelDef{
     }
 }
 
-export class StdNode extends Def{
+export class StdNode extends NodeLebelDef{
+    defs: Def[]
     constructor(symbol: string, arg: Def[]){
-        super()
+        super(symbol)
+        this.defs=arg
+    }
+
+    parse(buf: InputBuffer): Option<TreeEntry>{
+        let result: TreeEntry[] = [];
+        for(let d of this.defs){
+            result.push(d.parse(buf).get)
+        }
+        return some(new TreeNode({label: this.symbol, children: result}))
     }
 }
 
@@ -59,8 +80,30 @@ export class Choice extends Def{
 }
 
 export class Repeat extends Def{
+    defs: Def[]
     constructor(arg: Def[]){
         super()
+        this.defs = arg
+    }
+
+    parse(buf: InputBuffer): Option<TreeEntry>{
+        let result: TreeEntry[] = [];
+        while(true){
+            let head = this.defs[0].parse(buf)
+            if(head.isEmpty){
+                break;
+            }
+            result.push(head.get);
+            for(let v of this.defs.slice(1)){
+                let r = v.parse(buf).get
+                result.push(r)
+            }
+        }
+        if(result.length==0){
+            return none
+        }else{
+            some(new TreeEntrySequence({entries:result}))
+        }
     }
 }
 

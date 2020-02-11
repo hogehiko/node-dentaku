@@ -1,6 +1,7 @@
 import * as chai from 'chai';
 
 import * as parser from '../src/parser';
+import { Parser } from '../src/app';
 
 describe('token', () => {
 
@@ -18,6 +19,21 @@ describe('token', () => {
         let result = parser.muldiv_op.parse(new parser.InputBuffer("/"));
         chai.assert.deepEqual(result.get, new parser.TreeLeaf({label: 'muldiv_op', token: '/'}))
     })
+});
+
+describe('repeat', () => {
+
+    it('should work', () => {
+        let result = parser.muldiv_exp.parse(new parser.InputBuffer("1*2"));
+        chai.assert.deepEqual(result.get, new parser.TreeNode({label: 'muldiv_exp', children: [
+            new parser.TreeLeaf({label: 'number', token: '1'}),
+            new parser.TreeLeaf({label: 'muldiv_op', token: '*'}),
+            new parser.TreeLeaf({label: 'number', token: '2'})
+            
+        ]}))
+    })
+
+    
 });
 
 describe('InputBuffer', () => {
