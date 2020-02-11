@@ -2,7 +2,6 @@ let number = new RegExp("[0-9]+");
 
 let operator = new RegExp("[+\\-*/]");
 
-console.log(number);
 
 abstract class Token{
 }
@@ -161,11 +160,15 @@ function calc(target: string){
 
 }
 
-function main(){
-    console.log("main");
-    let target = "1 + 2 * 3";
-    calc(target);
-}
+process.stdin.setEncoding('utf8');
 
+process.stdin.on('readable', () => {
+  let chunk: string;
+  while ((chunk = process.stdin.read()) !== null) {
+    process.stdout.write(`${calc(chunk.replace(/\r?\n|\r/g, ''))}`);
+  }
+});
 
-main();
+process.stdin.on('end', () => {
+  process.stdout.write('end');
+});
