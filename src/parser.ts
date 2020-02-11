@@ -1,37 +1,64 @@
 import Record from 'dataclass';
+import {Option, option, some, none} from "ts-option";
 
+export interface TreeEntry{
+    label: string
+}
 
-class TreeNode{
+export class TreeNode extends Record<TreeNode> implements TreeEntry{
     label: string = ''
-    token: string = ''
     children: TreeNode[] = []
 }
 
-class Def{
-    parse(buf:InputBuffer){
+export class TreeLeaf extends Record<TreeLeaf> implements TreeEntry{
+    label: string = ''
+    token: string = ''
+}
 
+export class Def{
+    parse(buf:InputBuffer): Option<TreeEntry>{
+        return none
     }
 }
 
-class Token extends Def{
-    constructor(symbol: string, regexp:RegExp){
+export class NodeLebelDef extends Def{
+    symbol: string
+    constructor(symbol: string){
         super()
+        this.symbol = symbol
     }
 }
 
-class StdNode extends Def{
+export class Token extends NodeLebelDef{
+    regexp: RegExp
+    constructor(symbol: string, regexp:RegExp){
+        super(symbol)
+        this.regexp = regexp
+    }
+
+    parse(buf: InputBuffer): Option<TreeEntry>{
+        if(buf.match(this.regexp)){
+            let token = buf.next(this.regexp);
+            return some(new TreeLeaf({label: this.symbol, token: token}))
+        }else{
+            return none;
+        }
+    }
+}
+
+export class StdNode extends Def{
     constructor(symbol: string, arg: Def[]){
         super()
     }
 }
 
-class Choice extends Def{
+export class Choice extends Def{
     constructor(arg: Def[]){
         super()
     }
 }
 
-class Repeat extends Def{
+export class Repeat extends Def{
     constructor(arg: Def[]){
         super()
     }
@@ -53,26 +80,35 @@ function repeat(...repeat: Def[]): Repeat{
     return new Repeat(repeat)
 }
 
-let number = token('number', /0-9]+/)
-let addsub_op = token('addsub_op', /[+\\-]/)
-let muldiv_op = token('muldiv_op', /[*/]/)
-let muldiv_exp = exp('muldiv_exp', number, repeat(muldiv_op, number))
-let addsub_exp = exp('addsub_exp', muldiv_exp, repeat(addsub_op, muldiv_exp))
+export let number = token('number', /[0-9]+/)
+export let addsub_op = token('addsub_op', /[+\\-]/)
+export let muldiv_op = token('muldiv_op', /[*/]/)
+export let muldiv_exp = exp('muldiv_exp', number, repeat(muldiv_op, number))
+export let addsub_exp = exp('addsub_exp', muldiv_exp, repeat(addsub_op, muldiv_exp))
 
-class InputBuffer{
+export class InputBuffer{
     ws: RegExp = /[ ]+/
     constructor(inputString: string){
+        
+    }
 
+    match(regexp: RegExp): boolean{
+        return false
+    }
+
+    next(regexp: RegExp): string{
+        return ''
     }
 }
 
-class Runner{
+export class Runner{
     run(root: TreeNode): number{
         return 1
     }
+
 }
 
-function calc(inputString: string){
+export function calc(inputString: string){
     let buf = new InputBuffer(inputString)
     let tree = addsub_exp.parse(buf)
 }
