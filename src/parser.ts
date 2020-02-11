@@ -1,3 +1,12 @@
+import Record from 'dataclass';
+
+
+class TreeNode{
+    label: string = ''
+    token: string = ''
+    children: TreeNode[] = []
+}
+
 class Def{
     parse(buf:InputBuffer){
 
@@ -32,15 +41,15 @@ function token(symbol: string, regexp: RegExp): Token{
     return new Token(symbol, regexp)
 }
 
-function exp(symbol: string,...children: Def[]): Token{
+function exp(symbol: string,...children: Def[]): StdNode{
     return new StdNode(symbol, children)
 }
 
-function choice(...choice: Def[]): Token{
+function choice(...choice: Def[]): Choice{
     return new Choice(choice)
 }
 
-function repeat(...repeat: Def[]): Token{
+function repeat(...repeat: Def[]): Repeat{
     return new Repeat(repeat)
 }
 
@@ -57,7 +66,13 @@ class InputBuffer{
     }
 }
 
+class Runner{
+    run(root: TreeNode): number{
+        return 1
+    }
+}
+
 function calc(inputString: string){
     let buf = new InputBuffer(inputString)
-    addsub_exp.parse(buf)
+    let tree = addsub_exp.parse(buf)
 }
