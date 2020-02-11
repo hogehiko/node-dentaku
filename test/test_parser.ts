@@ -8,6 +8,16 @@ describe('token', () => {
         let result = parser.number.parse(new parser.InputBuffer("10"));
         chai.assert.deepEqual(result.get, new parser.TreeLeaf({label: 'number', token: '10'}))
     })
+
+    it('should work with operators', () => {
+        let result = parser.addsub_op.parse(new parser.InputBuffer("+"));
+        chai.assert.deepEqual(result.get, new parser.TreeLeaf({label: 'addsub_op', token: '+'}))
+    })
+
+    it('should work with operators2', () => {
+        let result = parser.muldiv_op.parse(new parser.InputBuffer("/"));
+        chai.assert.deepEqual(result.get, new parser.TreeLeaf({label: 'muldiv_op', token: '/'}))
+    })
 });
 
 describe('InputBuffer', () => {
