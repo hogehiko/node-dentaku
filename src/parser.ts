@@ -88,16 +88,35 @@ export let addsub_exp = exp('addsub_exp', muldiv_exp, repeat(addsub_op, muldiv_e
 
 export class InputBuffer{
     ws: RegExp = /[ ]+/
+    inputString: string
     constructor(inputString: string){
-        
+        this.inputString = inputString
+        this.skip_ws()
     }
 
     match(regexp: RegExp): boolean{
+        let m = this.inputString.search(regexp)
+        if(m == 0){
+            return true
+        }
         return false
     }
 
     next(regexp: RegExp): string{
-        return ''
+        let m = this.inputString.match(regexp)
+        for(let head of m.entries()){
+            this.inputString = this.inputString.substr(new String(head[1]).length)
+            this.skip_ws()
+            return head[1]
+        }
+        throw new Error()
+    }
+
+    skip_ws(){
+        if(this.match(this.ws)){
+            this.next(this.ws)
+        }
+        
     }
 }
 
