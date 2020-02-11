@@ -4,17 +4,27 @@
   "description": "",
   "main": "dist/app.js",
   "scripts": {
-    "start": "tsc && node dist/app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "calc": "tsc && node dist/src/app.js",
+    "test": "tsc && mocha ./dist/test/test_*.js"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/chai": "^4.2.8",
     "@types/express": "^4.16.1",
+    "@types/mocha": "^7.0.1",
+    "chai": "^4.2.0",
     "tslint": "^5.12.1",
-    "typescript": "^3.3.3"
+    "typemoq": "^2.1.0",
+    "typescript": "^3.7.5"
   },
   "dependencies": {
-    "express": "^4.16.4"
+    "express": "^4.16.4",
+    "istanbul": "^0.4.5",
+    "mocha": "^7.0.1",
+    "nodetest": "0.0.1",
+    "nodeunit": "^0.11.3",
+    "postinstall-build": "^5.0.3",
+    "remap-istanbul": "^0.13.0"
   }
 }

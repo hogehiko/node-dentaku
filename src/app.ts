@@ -67,7 +67,7 @@ function tokenize(tokenString: string){
     throw new Error();
 }
 
-class Parser{
+export class Parser{
     tokens: Token[]
     cursor = 0;
     constructor(tokens: Token[]){
@@ -147,7 +147,7 @@ class Parser{
 }
 
 
-function calc(target: string){
+export function calc(target: string): number{
     let tokenStrings = target.split(/[ ]*/);
     console.log(tokenStrings);
     let tokens = [];
@@ -156,7 +156,7 @@ function calc(target: string){
         console.log(tokenize(i));
     }
     let parser = new Parser(tokens);
-    console.log(parser.expression());
+    return parser.expression();
 
 }
 
