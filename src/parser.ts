@@ -21,7 +21,7 @@ export class TreeLeaf extends Record<TreeLeaf> implements LabeledTreeEntry{
 }
 
 export class TreeEntrySequence extends Record<TreeEntrySequence> implements TreeEntry{
-    entries: TreeEntry[]
+    entries: TreeEntry[] = []
 }
 
 export class Def{
@@ -69,8 +69,25 @@ export class StdNode extends NodeLebelDef{
         for(let d of this.defs){
             result.push(d.parse(buf).get)
         }
-        return some(new TreeNode({label: this.symbol, children: result}))
+        return some(new TreeNode({label: this.symbol, children: flatten(result)}))
     }
+}
+
+export function flatten(entries: TreeEntry[]): TreeEntry[]{
+    let result: TreeEntry[] = [];
+    for(let e of entries){
+        if(e instanceof TreeEntrySequence){
+            for(let e2 of flatten((e as TreeEntrySequence).entries)){
+                result.push(e2);
+            }
+        }else if(e instanceof TreeNode && (e as TreeNode).children.length == 1){
+            result.push((e as TreeNode).children[0]);
+        
+        }else{
+            result.push(e);
+        }
+    }
+    return result;
 }
 
 export class Choice extends Def{
@@ -89,7 +106,7 @@ export class Repeat extends Def{
     parse(buf: InputBuffer): Option<TreeEntry>{
         let result: TreeEntry[] = [];
         while(true){
-            let head = this.defs[0].parse(buf)
+            let head = this.head(buf)
             if(head.isEmpty){
                 break;
             }
@@ -99,33 +116,33 @@ export class Repeat extends Def{
                 result.push(r)
             }
         }
-        if(result.length==0){
-            return none
-        }else{
-            some(new TreeEntrySequence({entries:result}))
-        }
+        return some(new TreeEntrySequence({entries:result}))
+    }
+
+    head(buf: InputBuffer){
+        return this.defs[0].parse(buf);
     }
 }
 
-function token(symbol: string, regexp: RegExp): Token{
+export function token(symbol: string, regexp: RegExp): Token{
     return new Token(symbol, regexp)
 }
 
-function exp(symbol: string,...children: Def[]): StdNode{
+export function exp(symbol: string,　...children: Def[]): StdNode{
     return new StdNode(symbol, children)
 }
 
-function choice(...choice: Def[]): Choice{
+export function choice(...choice: Def[]): Choice{
     return new Choice(choice)
 }
 
-function repeat(...repeat: Def[]): Repeat{
+export function repeat(...repeat: Def[]): Repeat{
     return new Repeat(repeat)
 }
 
 export let number = token('number', /[0-9]+/)
-export let addsub_op = token('addsub_op', /[+\\-]/)
-export let muldiv_op = token('muldiv_op', /[*/]/)
+export let addsub_op = token('addsub_op', /[+\-]/)
+export let muldiv_op = token('muldiv_op', /[\*/]/)
 export let muldiv_exp = exp('muldiv_exp', number, repeat(muldiv_op, number))
 export let addsub_exp = exp('addsub_exp', muldiv_exp, repeat(addsub_op, muldiv_exp))
 
